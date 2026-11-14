@@ -391,7 +391,8 @@ export async function runApplyAgent(maxJobs: number = 10): Promise<JobResult[]> 
 }
 
 if (require.main === module) {
-  runApplyAgent().catch((err) => {
+  const maxJobsArg = process.argv[2] ? parseInt(process.argv[2], 10) : (process.env.MAX_JOBS ? parseInt(process.env.MAX_JOBS, 10) : 10);
+  runApplyAgent(maxJobsArg).catch((err) => {
     console.error('Fatal execution error:', err);
     process.exit(1);
   });

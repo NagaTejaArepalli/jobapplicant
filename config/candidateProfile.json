@@ -65,9 +65,9 @@
     ]
   },
   "hr_logistics": {
-    "current_ctc_lpa": "14",
-    "expected_ctc_lpa": "22",
-    "notice_period_days": "30",
+    "current_ctc_lpa": "9.75",
+    "expected_ctc_lpa": "15",
+    "notice_period_days": "60",
     "willing_to_relocate_to_hyderabad": "Yes",
     "willing_to_work_hybrid_or_onsite": "Yes",
     "requires_visa_sponsorship_in_india": "No"
