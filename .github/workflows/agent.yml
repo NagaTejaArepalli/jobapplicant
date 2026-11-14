@@ -1,0 +1,63 @@
+name: SDET Auto-Apply Agent
+
+on:
+  schedule:
+    - cron: '30 3 * * 1-5' # Runs at 9:00 AM IST (Monday to Friday)
+  workflow_dispatch: # Allows manual trigger anytime from the Actions tab
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to commit updated state/appliedJobs.json
+    container:
+      image: mcr.microsoft.com/playwright:v1.48.0-noble
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Run Playwright Job Agent
+        run: npx ts-node src/applyAgent.ts
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DRY_RUN: ${{ vars.DRY_RUN || 'true' }}
+          REPORT_EMAIL: ${{ vars.REPORT_EMAIL || 'nagateja2704@gmail.com' }}
+
+      - name: Send Consolidated Email
+        run: npx ts-node src/sendEmailReport.ts
+        if: always()
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          REPORT_EMAIL: ${{ vars.REPORT_EMAIL || 'nagateja2704@gmail.com' }}
+
+      - name: Commit Deduplication State
+        if: always()
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain state/appliedJobs.json)" ]; then
+            git add state/appliedJobs.json
+            git commit -m "chore(state): update applied jobs deduplication ledger [skip ci]"
+            git push
+          else
+            console_msg="No new jobs applied, state unchanged."
+            echo "$console_msg"
+          fi
+
+      - name: Upload State and Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apply-reports
+          path: |
+            reports/
+            state/appliedJobs.json
+          retention-days: 7

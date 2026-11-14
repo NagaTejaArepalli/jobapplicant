@@ -1,6 +1,6 @@
 # AI QA/SDET Job Applier Agent (Bengaluru, Hyderabad & Pan-India)
 
-An automated AI-powered agent designed to discover active QA/SDET openings directly from company career portals (Greenhouse and Lever ATS APIs) and automate the application process using **Playwright** + **Google Gemini AI**, with automated daily email summaries and scheduled execution via **GitLab CI/CD**.
+An automated AI-powered agent designed to discover active QA/SDET openings directly from company career portals (Greenhouse and Lever ATS APIs) and automate the application process using **Playwright** + **Google Gemini AI**, with automated daily email summaries and multi-platform automation support (**GitHub Actions**, **GitLab CI/CD**, or **Local Windows/Mac Task Scheduler**).
 
 ---
 
@@ -14,10 +14,9 @@ Unlike scrapers that query LinkedIn or Naukri (which often result in "Easy Apply
 1. **Direct-to-ATS Discovery**: Queries official ATS APIs for fresh roles in Bengaluru, Hyderabad, Pune, Chennai, and remote India.
 2. **AI-Powered Screening Form Filler**: Uses Gemini 2.5 Flash to dynamically answer complex custom screening questions (CTC, Notice Period, Years of experience with Playwright / Selenium / Java / API, etc.) strictly grounded in candidate data.
 3. **Smart Heuristic Fallback**: Includes deterministic fallbacks so the bot continues to work smoothly even if offline or if no Gemini API key is provided.
-4. **Duplicate Prevention**: Maintains a persistent state ledger (`state/appliedJobs.json`) cached across runs.
+4. **Duplicate Prevention**: Maintains a persistent state ledger (`state/appliedJobs.json`) cached and committed across runs.
 5. **Dry-Run Safe Mode**: Configurable `DRY_RUN=true` mode by default, allowing end-to-end form population, validation, and screenshot verification without submitting duplicates.
 6. **Consolidated Email Reporter**: Compiles an HTML report table + CSV attachment and delivers it via SMTP right after each execution.
-7. **GitLab CI/CD Scheduled Runner**: Runs in official Microsoft Playwright containers with artifact archiving and scheduling support.
 
 ---
 
@@ -25,6 +24,9 @@ Unlike scrapers that query LinkedIn or Naukri (which often result in "Easy Apply
 
 ```
 JOBAPPLIERAGENT/
+├── .github/workflows/
+│   └── agent.yml                   # GitHub Actions workflow (2,000 free mins, no credit card)
+├── .gitlab-ci.yml                  # GitLab CI/CD pipeline definition
 ├── assets/
 │   └── ArepalliNagaTeja.pdf        # Candidate resume PDF (uploaded on application forms)
 ├── config/
@@ -41,7 +43,9 @@ JOBAPPLIERAGENT/
 │   ├── application_summary.json    # JSON output of the last run
 │   ├── applied_jobs_report.csv     # CSV report of applications
 │   └── screenshots/                # Full-page screenshots captured during runs
-├── .gitlab-ci.yml                  # GitLab CI/CD pipeline definition
+├── run_agent.bat                   # 1-click Windows runner / Task Scheduler script
+├── run_agent.ps1                   # Windows PowerShell runner
+├── run_agent.sh                    # Linux / macOS / crontab runner
 ├── .env.example                    # Environment variable template
 ├── package.json
 └── tsconfig.json
@@ -49,32 +53,52 @@ JOBAPPLIERAGENT/
 
 ---
 
-## 🚀 Quick Start (Local Setup)
+## ⚡ 3 Ways to Run for Free (Bypassing GitLab Credit Card Check)
 
-### 1. Install Dependencies
-```bash
-npm install
-npx playwright install chromium
-```
+### Option 1: GitHub Actions (Recommended — 100% Free, No Credit Card)
+GitHub Actions provides **2,000 free minutes per month** with no credit card required.
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env` and fill in your details:
-```bash
-cp .env.example .env
-```
-Key variables:
-- `GEMINI_API_KEY`: Your Google AI Studio API key.
-- `SMTP_USER`: Your Gmail address (e.g. `nagateja2704@gmail.com`).
-- `SMTP_PASS`: 16-character Google App Password (generated from Google Account → Security → 2-Step Verification → App Passwords).
-- `DRY_RUN`: Set to `true` to test form filling without final submission, or `false` for live submissions.
-- `HEADLESS`: `true` for headless execution or `false` to watch the browser in real time.
-
-### 3. Replace Resume File
-Replace `assets/ArepalliNagaTeja.pdf` with your updated PDF resume.
+1. **Push your repository to GitHub**:
+   ```bash
+   git remote add github https://github.com/<your-username>/<your-repo-name>.git
+   git push -u github main
+   ```
+2. **Add Secrets** in your GitHub repo under **Settings → Secrets and variables → Actions**:
+   - `GEMINI_API_KEY`: Your Google AI Studio API key.
+   - `SMTP_USER`: `nagateja2704@gmail.com`
+   - `SMTP_PASS`: Your 16-character Google App Password.
+3. **Execution**:
+   - The workflow automatically runs on a schedule every weekday at **9:00 AM IST** (`30 3 * * 1-5` UTC).
+   - You can also run it manually anytime by going to the **Actions** tab → **SDET Auto-Apply Agent** → **Run workflow**.
 
 ---
 
-## 🛠 Available Commands
+### Option 2: Keep GitLab with a Free Self-Hosted "Local Runner"
+If you prefer GitLab, bypass their credit card verification by registering your own laptop as a GitLab runner:
+
+1. Download the GitLab runner binary for your OS: [GitLab Runner Install Docs](https://docs.gitlab.com/runner/install/).
+2. In your GitLab project, go to **Settings → CI/CD → Runners**.
+3. Under **Project runners**, click **New project runner** and tag it (e.g., `playwright`, `windows`).
+4. Run the registration command shown by GitLab in your terminal.
+5. Once registered, start the runner (`gitlab-runner run`). Any pipeline trigger will now execute directly on your machine without requiring a credit card!
+
+---
+
+### Option 3: Run Locally via Windows Task Scheduler or Crontab
+Run the bot completely on your local machine with zero cloud configuration:
+
+1. Copy `.env.example` to `.env` and fill in your credentials (`GEMINI_API_KEY`, `SMTP_USER`, `SMTP_PASS`).
+2. Test by double-clicking `run_agent.bat` (or executing `run_agent.ps1` in PowerShell).
+3. **Automate with Windows Task Scheduler**:
+   - Open **Task Scheduler** in Windows (`taskschd.msc`).
+   - Click **Create Basic Task** → Name: "SDET Job Applier".
+   - Trigger: **Daily** at **9:00 AM**.
+   - Action: **Start a program** → Program/script: `d:\AI Projects\JOBAPPLIERAGENT\run_agent.bat`.
+   - Add argument: `--no-pause`.
+
+---
+
+## 🛠 Manual Execution Commands
 
 | Command | Description |
 |---|---|
@@ -83,31 +107,3 @@ Replace `assets/ArepalliNagaTeja.pdf` with your updated PDF resume.
 | `npm run email` | Compiles the consolidated HTML table & CSV and emails the report. |
 | `npm start` | Executes the full pipeline: discover, apply, and email report. |
 | `npm run build` | Compiles TypeScript code to `dist/`. |
-
----
-
-## ⚙️ GitLab CI/CD Setup
-
-1. **Push this repository to GitLab**:
-   ```bash
-   git add .
-   git commit -m "feat: complete AI SDET job applier agent"
-   git remote add origin <your-gitlab-repo-url>
-   git push -u origin main
-   ```
-
-2. **Add CI/CD Variables** in **GitLab → Settings → CI/CD → Variables**:
-   - `GEMINI_API_KEY`: (Masked) Your Google AI Studio API key.
-   - `SMTP_USER`: (Masked) Your email address.
-   - `SMTP_PASS`: (Masked) Your 16-character Google App Password.
-   - `DRY_RUN`: `false` (for live applications) or `true` (for test runs).
-
-3. **Set Scheduled Runs**:
-   - Go to **GitLab → Build → Pipeline schedules**.
-   - Create a new schedule (e.g., `0 9 * * 1-5` for 9:00 AM IST every weekday).
-
----
-
-## 🔒 Security & Anti-Bot Best Practices
-- The agent respects rate limits and processes in configurable batches (default 10-15 applications per run).
-- Any job page requiring strict human CAPTCHAs or OTP verification is flagged with status `MANUAL_ACTION_REQUIRED` and direct job URLs are included in your daily report so you can complete them in 30 seconds.
