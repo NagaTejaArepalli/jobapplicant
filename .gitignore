@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+reports/screenshots/
+reports/application_summary.json
+reports/applied_jobs_report.csv
+!reports/.gitkeep

@@ -1,0 +1,36 @@
+{
+  "name": "ai-sdet-job-agent",
+  "version": "1.0.0",
+  "description": "Automated AI Agent to discover and apply to QA/SDET jobs across Greenhouse and Lever product companies in India with GitLab CI/CD",
+  "main": "dist/applyAgent.js",
+  "scripts": {
+    "build": "tsc",
+    "discover": "ts-node src/discoverJobs.ts",
+    "apply": "ts-node src/applyAgent.ts",
+    "email": "ts-node src/sendEmailReport.ts",
+    "start": "ts-node src/applyAgent.ts && ts-node src/sendEmailReport.ts",
+    "test": "echo \"Running sanity checks...\" && ts-node -e \"console.log('Environment ready')\""
+  },
+  "keywords": [
+    "sdet",
+    "qa",
+    "playwright",
+    "job-applier",
+    "gemini",
+    "gitlab-ci"
+  ],
+  "author": "Naga Teja Arepalli",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "dotenv": "^16.4.7",
+    "nodemailer": "^6.10.0",
+    "playwright": "^1.50.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "@types/nodemailer": "^6.4.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

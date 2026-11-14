@@ -1,0 +1,39 @@
+{
+  "greenhouse": [
+    "razorpay",
+    "postman",
+    "browserstack",
+    "airbnb",
+    "chargebee",
+    "clevertap",
+    "rubrik",
+    "purestorage",
+    "databricks",
+    "okta",
+    "zscaler",
+    "crowdstrike",
+    "coupasoftware",
+    "toast",
+    "agoda",
+    "stripe",
+    "sprinklr",
+    "tekion",
+    "udaan",
+    "elastic",
+    "twilio",
+    "confluent",
+    "fivetran"
+  ],
+  "lever": [
+    "meesho",
+    "cred",
+    "zepto",
+    "hasura",
+    "whatfix",
+    "actian",
+    "veeva",
+    "darwinbox",
+    "slice",
+    "groww"
+  ]
+}

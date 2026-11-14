@@ -1,0 +1,58 @@
+{
+  "personal_info": {
+    "first_name": "Naga Teja",
+    "last_name": "Arepalli",
+    "full_name": "Naga Teja Arepalli",
+    "email": "nagateja2704@gmail.com",
+    "phone": "+919347763464",
+    "phone_without_code": "9347763464",
+    "current_location": "Bengaluru, Karnataka, India",
+    "preferred_locations": ["Bengaluru", "Bangalore", "Hyderabad", "Pune", "Chennai", "Noida", "Gurugram", "Mumbai", "Remote"],
+    "linkedin_url": "https://www.linkedin.com/in/naga-teja-arepalli",
+    "portfolio_url": "https://github.com/naga-teja-arepalli"
+  },
+  "experience_summary": {
+    "current_company": "Infor",
+    "current_title": "QA Engineer (SDET)",
+    "previous_company": "Accenture in India",
+    "total_years_experience": "3.5",
+    "relevant_automation_years": "3.5",
+    "education": {
+      "degree": "Bachelor of Technology (B.Tech) in Computer Science",
+      "university": "Vel Tech Rangarajan Dr. Sagunthala R&D Institute, Chennai",
+      "graduation_year": "2023",
+      "grade": "First Class with Distinction"
+    }
+  },
+  "hr_logistics": {
+    "current_ctc_lpa": "14",
+    "expected_ctc_lpa": "22",
+    "notice_period_days": "30",
+    "willing_to_relocate_to_hyderabad": "Yes",
+    "willing_to_work_hybrid_or_onsite": "Yes",
+    "requires_visa_sponsorship_in_india": "No"
+  },
+  "target_preferences": {
+    "exclude_companies": ["Infor"],
+    "target_keywords": [
+      "SDET",
+      "Quality Engineer",
+      "QA Engineer",
+      "Automation Engineer",
+      "Software Engineer in Test",
+      "Playwright",
+      "Test Automation",
+      "Quality Assurance"
+    ],
+    "exclude_title_keywords": [
+      "Director",
+      "VP",
+      "Manager",
+      "Principal",
+      "Intern",
+      "10+ years",
+      "8+ years"
+    ]
+  },
+  "skills_context_for_llm": "QA Engineer (SDET) with strong expertise in Playwright with TypeScript, Java with Selenium, RestAssured API testing, BDD (Cucumber), CI/CD (Jenkins, GitHub Actions, GitLab CI), manual testing, comprehensive test case writing, Jira and Zephyr."
+}

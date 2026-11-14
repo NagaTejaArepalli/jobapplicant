@@ -1,0 +1,35 @@
+stages:
+  - apply
+  - email_report
+
+variables:
+  PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+
+cache:
+  key: applied-jobs-state
+  paths:
+    - state/appliedJobs.json
+
+run_playwright_agent:
+  stage: apply
+  image: mcr.microsoft.com/playwright:v1.48.0-noble
+  script:
+    - npm ci || npm install
+    - npx ts-node src/applyAgent.ts
+  artifacts:
+    when: always
+    paths:
+      - reports/application_summary.json
+      - reports/applied_jobs_report.csv
+      - reports/screenshots/
+      - state/appliedJobs.json
+    expire_in: 7 days
+
+send_consolidated_email:
+  stage: email_report
+  image: node:20-alpine
+  needs: ["run_playwright_agent"]
+  when: always
+  script:
+    - npm ci || npm install
+    - npx ts-node src/sendEmailReport.ts
