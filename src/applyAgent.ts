@@ -39,7 +39,9 @@ async function applyToGreenhouse(page: Page, job: DiscoveredJob): Promise<JobRes
   const screenshotPath = path.join(screenshotsDir, `${safeId}.png`);
 
   try {
-    await page.goto(job.applyUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
+    await page.goto(job.applyUrl, { waitUntil: 'networkidle', timeout: 60000 }).catch(async () => {
+      await page.waitForLoadState('domcontentloaded');
+    });
 
     // Handle possible cookie banners
     const acceptCookies = page.locator('button:has-text("Accept"), button:has-text("Agree"), #onetrust-accept-btn-handler');
@@ -53,51 +55,56 @@ async function applyToGreenhouse(page: Page, job: DiscoveredJob): Promise<JobRes
     await page.fill('#email, input[name*="email"]', profile.personal_info.email).catch(() => {});
     await page.fill('#phone, input[name*="phone"]', profile.personal_info.phone).catch(() => {});
 
-    // Upload Resume PDF
-    const fileInput = page.locator('input[type="file"]').first();
-    if (await fileInput.count() > 0 && fs.existsSync(resumePath)) {
-      await fileInput.setInputFiles(resumePath).catch((err) => {
-        console.warn(`[Greenhouse] Resume upload note: ${err.message}`);
-      });
+    // Upload Resume PDF (wait for Greenhouse React uploader hydration)
+    if (fs.existsSync(resumePath)) {
+      await page.waitForTimeout(1500);
+      const fileInput = page.locator('input[type="file"]#resume, input[type="file"]').first();
+      if (await fileInput.count() > 0) {
+        await fileInput.setInputFiles(resumePath).catch(() => {});
+        await page.waitForTimeout(2000);
+      }
     }
 
     // 2. React-Select Comboboxes
     const comboboxes = await page.locator('input[role="combobox"]').all();
     for (const cb of comboboxes) {
       const cbId = await cb.getAttribute('id') || '';
-      if (cbId === 'country' || cbId === 'candidate-location') continue;
+      if (cbId.includes('search-input') || cbId === 'country' || cbId === 'candidate-location' || cbId.startsWith('iti-') || cbId.startsWith('school-') || cbId.startsWith('degree-') || cbId.startsWith('discipline-')) {
+        continue;
+      }
 
-      const parentField = page.locator(`div:has(> * > * > #${cbId}), div:has(> * > #${cbId})`).first();
       const label = await cb.getAttribute('aria-label') || 
                     await page.locator(`label[for="${cbId}"]`).innerText().catch(() => '') ||
-                    await parentField.locator('label, legend, [class*="label"]').first().innerText().catch(() => '');
+                    await page.locator(`div:has(> * > #${cbId})`).locator('..').locator('label, legend, [class*="label"]').first().innerText().catch(() => '') ||
+                    await page.locator(`div:has(> #${cbId})`).locator('../..').locator('label, legend, [class*="label"]').first().innerText().catch(() => '');
 
-      const control = page.locator(`div:has(> #${cbId})`).locator('..').first();
-      await control.scrollIntoViewIfNeeded().catch(() => {});
-      await control.click().catch(() => {});
-      await page.waitForTimeout(400);
+      const q = label.toLowerCase();
+      let target = '';
+      if (q.includes('authorized') || q.includes('authorization') || q.includes('legally')) {
+        target = 'Yes';
+      } else if (q.includes('sponsorship') || q.includes('visa')) {
+        target = 'No';
+      } else if (q.includes('export') || q.includes('sanction') || q.includes('embargo')) {
+        target = 'No';
+      } else if (q.includes('previously worked') || q.includes('former employee') || q.includes('worked for')) {
+        target = 'No';
+      }
 
-      const menuOptions = await page.$$eval('[class*="option"], [role="option"]', els =>
-        els.map(e => ((e as HTMLElement).innerText || e.textContent || '').trim()).filter(Boolean)
-      );
+      if (target) {
+        const control = page.locator(`div:has(> #${cbId})`).locator('..').first();
+        await control.scrollIntoViewIfNeeded().catch(() => {});
+        await control.click().catch(() => {});
+        await page.waitForTimeout(400);
 
-      if (menuOptions.length > 0) {
-        const chosen = await answerCustomQuestion(label, menuOptions);
-        const targetOpt = page.locator('[class*="option"], [role="option"]').filter({ hasText: new RegExp(`^${chosen}$`, 'i') }).first();
+        const targetOpt = page.locator('[class*="option"]').filter({ hasText: new RegExp(`^${target}$`, 'i') }).first();
         if (await targetOpt.count() > 0) {
           await targetOpt.click().catch(() => {});
+          console.log(`[Greenhouse] Selected "${target}" for: ${label}`);
         } else {
-          const fallbackOpt = page.locator('[class*="option"], [role="option"]').filter({ hasText: chosen }).first();
-          if (await fallbackOpt.count() > 0) {
-            await fallbackOpt.click().catch(() => {});
-          } else {
-            await page.keyboard.press('Enter').catch(() => {});
-          }
+          await page.keyboard.press('Escape').catch(() => {});
         }
-      } else {
-        await page.keyboard.press('Escape').catch(() => {});
+        await page.waitForTimeout(200);
       }
-      await page.waitForTimeout(200);
     }
 
     // Fill Custom Questions
