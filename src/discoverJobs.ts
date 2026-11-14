@@ -26,7 +26,8 @@ export async function fetchGreenhouseJobs(): Promise<DiscoveredJob[]> {
   const companies = loadTargetCompanies();
   const matchedJobs: DiscoveredJob[] = [];
 
-  const locationRegex = /india|bangalore|bengaluru|hyderabad|pune|chennai|noida|gurugram|gurgaon|mumbai|remote/i;
+  const locationRegex = /\b(india|bangalore|bengaluru|hyderabad|pune|chennai|noida|gurugram|gurgaon|mumbai)\b|remote.*india|india.*remote/i;
+  const foreignCountryRegex = /\b(brazil|united states|usa|canada|germany|australia|singapore|japan|france|uk|united kingdom)\b/i;
   const targetRegex = new RegExp(profile.target_preferences.target_keywords.join('|'), 'i');
   const excludeRegex = new RegExp(profile.target_preferences.exclude_title_keywords.join('|'), 'i');
   const excludedCompanies = (profile.target_preferences.exclude_companies || []).map((c: string) => c.toLowerCase());
@@ -45,7 +46,7 @@ export async function fetchGreenhouseJobs(): Promise<DiscoveredJob[]> {
       for (const job of data.jobs || []) {
         const title = job.title || '';
         const loc = job.location?.name || '';
-        const matchesLoc = locationRegex.test(loc);
+        const matchesLoc = locationRegex.test(loc) && !foreignCountryRegex.test(loc);
         const matchesRole = targetRegex.test(title);
         const isExcluded = excludeRegex.test(title);
 
@@ -74,7 +75,8 @@ export async function fetchLeverJobs(): Promise<DiscoveredJob[]> {
   const companies = loadTargetCompanies();
   const matchedJobs: DiscoveredJob[] = [];
 
-  const locationRegex = /india|bangalore|bengaluru|hyderabad|pune|chennai|noida|gurugram|gurgaon|mumbai|remote/i;
+  const locationRegex = /\b(india|bangalore|bengaluru|hyderabad|pune|chennai|noida|gurugram|gurgaon|mumbai)\b|remote.*india|india.*remote/i;
+  const foreignCountryRegex = /\b(brazil|united states|usa|canada|germany|australia|singapore|japan|france|uk|united kingdom)\b/i;
   const targetRegex = new RegExp(profile.target_preferences.target_keywords.join('|'), 'i');
   const excludeRegex = new RegExp(profile.target_preferences.exclude_title_keywords.join('|'), 'i');
   const excludedCompanies = (profile.target_preferences.exclude_companies || []).map((c: string) => c.toLowerCase());
@@ -94,7 +96,7 @@ export async function fetchLeverJobs(): Promise<DiscoveredJob[]> {
         const title = job.text || '';
         const loc = job.categories?.location || '';
         const allText = `${loc} ${job.description || ''}`;
-        const matchesLoc = locationRegex.test(loc) || locationRegex.test(allText);
+        const matchesLoc = (locationRegex.test(loc) || locationRegex.test(allText)) && !foreignCountryRegex.test(loc);
         const matchesRole = targetRegex.test(title);
         const isExcluded = excludeRegex.test(title);
 
