@@ -75,12 +75,12 @@ async function applyToGreenhouse(page: Page, job: DiscoveredJob): Promise<JobRes
         const val = await textInput.inputValue().catch(() => '');
         if (!val) {
           if (/linkedin/i.test(labelText)) {
-            await textInput.fill(profile.personal_info.linkedin_url);
+            await textInput.fill(profile.personal_info.linkedin_url, { timeout: 5000 }).catch(() => {});
           } else if (/github|portfolio|website/i.test(labelText)) {
-            await textInput.fill(profile.personal_info.portfolio_url);
+            await textInput.fill(profile.personal_info.portfolio_url, { timeout: 5000 }).catch(() => {});
           } else {
             const answer = await answerCustomQuestion(labelText);
-            await textInput.fill(answer);
+            await textInput.fill(answer, { timeout: 5000 }).catch(() => {});
           }
         }
       }
@@ -238,7 +238,7 @@ async function applyToLever(page: Page, job: DiscoveredJob): Promise<JobResult> 
         const val = await input.inputValue().catch(() => '');
         if (!val) {
           const ans = await answerCustomQuestion(label);
-          await input.fill(ans);
+          await input.fill(ans, { timeout: 5000 }).catch(() => {});
         }
       }
     }
