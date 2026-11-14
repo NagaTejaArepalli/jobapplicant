@@ -199,7 +199,6 @@ export async function answerCustomQuestion(questionLabel: string, options?: stri
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     const prompt = `
 You are filling out a job application on behalf of candidate ${profile.personal_info.full_name}.
 Candidate Profile & Resume Context:
@@ -226,8 +225,31 @@ Rules:
 13. Never dump a generic sentence about years of experience into fields that ask for company, title, or source.
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().trim();
+    const candidateModels = [
+      process.env.GEMINI_MODEL,
+      'gemini-flash-latest',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash-latest',
+      'gemini-1.5-flash',
+      'gemini-pro-latest'
+    ].filter(Boolean) as string[];
+    let text = '';
+
+    for (const m of candidateModels) {
+      try {
+        const model = genAI.getGenerativeModel({ model: m });
+        const result = await model.generateContent(prompt);
+        text = result.response.text().trim();
+        if (text) {
+          break;
+        }
+      } catch (innerErr: any) {
+        if (innerErr.message && (innerErr.message.includes('404') || innerErr.message.includes('not found') || innerErr.message.includes('no longer available'))) {
+          continue;
+        }
+        throw innerErr;
+      }
+    }
     return text || heuristicAnswer(questionLabel, options);
   } catch (err: any) {
     console.warn(`[LLM Helper] Gemini API fallback used (${err.message}).`);
