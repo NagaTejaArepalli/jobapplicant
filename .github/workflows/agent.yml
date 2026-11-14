@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # Needed to commit updated state/appliedJobs.json
-    container:
-      image: mcr.microsoft.com/playwright:v1.48.0-noble
 
     steps:
       - name: Checkout Repository
@@ -19,8 +17,17 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
       - name: Install Dependencies
-        run: npm ci || npm install
+        run: npm ci
+
+      - name: Install Playwright Browsers & OS Dependencies
+        run: npx playwright install --with-deps chromium
 
       - name: Run Playwright Job Agent
         run: npx ts-node src/applyAgent.ts
@@ -48,8 +55,7 @@ jobs:
             git commit -m "chore(state): update applied jobs deduplication ledger [skip ci]"
             git push
           else
-            console_msg="No new jobs applied, state unchanged."
-            echo "$console_msg"
+            echo "No new jobs applied, state unchanged."
           fi
 
       - name: Upload State and Reports
