@@ -61,31 +61,64 @@ async function applyToGreenhouse(page: Page, job: DiscoveredJob): Promise<JobRes
       });
     }
 
+    // 2. React-Select Comboboxes
+    const comboboxes = await page.locator('input[role="combobox"]').all();
+    for (const cb of comboboxes) {
+      const cbId = await cb.getAttribute('id') || '';
+      if (cbId === 'country' || cbId === 'candidate-location') continue;
+
+      const parentField = page.locator(`div:has(> * > * > #${cbId}), div:has(> * > #${cbId})`).first();
+      const label = await cb.getAttribute('aria-label') || 
+                    await page.locator(`label[for="${cbId}"]`).innerText().catch(() => '') ||
+                    await parentField.locator('label, legend, [class*="label"]').first().innerText().catch(() => '');
+
+      const control = page.locator(`div:has(> #${cbId})`).locator('..').first();
+      await control.scrollIntoViewIfNeeded().catch(() => {});
+      await control.click().catch(() => {});
+      await page.waitForTimeout(400);
+
+      const menuOptions = await page.$$eval('[class*="option"], [role="option"]', els =>
+        els.map(e => ((e as HTMLElement).innerText || e.textContent || '').trim()).filter(Boolean)
+      );
+
+      if (menuOptions.length > 0) {
+        const chosen = await answerCustomQuestion(label, menuOptions);
+        const targetOpt = page.locator('[class*="option"], [role="option"]').filter({ hasText: new RegExp(`^${chosen}$`, 'i') }).first();
+        if (await targetOpt.count() > 0) {
+          await targetOpt.click().catch(() => {});
+        } else {
+          const fallbackOpt = page.locator('[class*="option"], [role="option"]').filter({ hasText: chosen }).first();
+          if (await fallbackOpt.count() > 0) {
+            await fallbackOpt.click().catch(() => {});
+          } else {
+            await page.keyboard.press('Enter').catch(() => {});
+          }
+        }
+      } else {
+        await page.keyboard.press('Escape').catch(() => {});
+      }
+      await page.waitForTimeout(200);
+    }
+
     // Fill Custom Questions
-    const fields = await page.locator('.field, .application-question, div[class*="field"]').all();
+    const fields = await page.locator('.field, .application-question, div[class*="field"], div[class*="question"]').all();
     for (const field of fields) {
-      const labelText = (await field.locator('label').innerText().catch(() => '')).trim();
+      const labelText = (await field.locator('label, legend, [class*="label"]').first().innerText().catch(() => '')).trim();
       if (!labelText || /first name|last name|email|phone|resume|cv/i.test(labelText)) {
         continue;
       }
 
-      // Check text / textarea inputs
-      const textInput = field.locator('input[type="text"], textarea').first();
-      if (await textInput.count() > 0) {
-        const val = await textInput.inputValue().catch(() => '');
-        if (!val) {
-          if (/linkedin/i.test(labelText)) {
-            await textInput.fill(profile.personal_info.linkedin_url, { timeout: 5000 }).catch(() => {});
-          } else if (/github|portfolio|website/i.test(labelText)) {
-            await textInput.fill(profile.personal_info.portfolio_url, { timeout: 5000 }).catch(() => {});
-          } else {
-            const answer = await answerCustomQuestion(labelText);
-            await textInput.fill(answer, { timeout: 5000 }).catch(() => {});
-          }
+      // Checkboxes (policy acknowledge, terms, consent, required)
+      const checkbox = field.locator('input[type="checkbox"]').first();
+      if (await checkbox.count() > 0 && !(await checkbox.isChecked())) {
+        const isConsent = /acknowledge|confirm|agree|consent|policy|terms/i.test(labelText) ||
+          await field.locator('[aria-required="true"], [required], [class*="asterisk"]').count() > 0;
+        if (isConsent) {
+          await checkbox.check({ force: true }).catch(() => {});
         }
       }
 
-      // Check select dropdowns
+      // Native select dropdowns
       const selectElem = field.locator('select').first();
       if (await selectElem.count() > 0) {
         const optionElements = await selectElem.locator('option').all();
@@ -101,6 +134,24 @@ async function applyToGreenhouse(page: Page, job: DiscoveredJob): Promise<JobRes
           await selectElem.selectOption({ label: chosen }).catch(async () => {
             await selectElem.selectOption({ index: 1 }).catch(() => {});
           });
+        }
+      }
+
+      // Regular text inputs and textareas (excluding comboboxes)
+      const textInput = field.locator('input[type="text"]:not([role="combobox"]), textarea').first();
+      if (await textInput.count() > 0) {
+        const val = await textInput.inputValue().catch(() => '');
+        if (!val) {
+          if (/linkedin/i.test(labelText)) {
+            await textInput.fill(profile.personal_info.linkedin_url, { timeout: 5000 }).catch(() => {});
+          } else if (/github|portfolio|website/i.test(labelText)) {
+            await textInput.fill(profile.personal_info.portfolio_url, { timeout: 5000 }).catch(() => {});
+          } else {
+            const answer = await answerCustomQuestion(labelText);
+            if (answer && answer !== 'N/A') {
+              await textInput.fill(answer, { timeout: 5000 }).catch(() => {});
+            }
+          }
         }
       }
     }
@@ -227,18 +278,50 @@ async function applyToLever(page: Page, job: DiscoveredJob): Promise<JobResult> 
       });
     }
 
-    // Additional questions
-    const questionWrappers = await page.locator('.application-question, .custom-question').all();
+    // Additional questions in Lever
+    const questionWrappers = await page.locator('.application-question, .custom-question, div[class*="question"]').all();
     for (const wrapper of questionWrappers) {
-      const label = (await wrapper.locator('.application-label, label').innerText().catch(() => '')).trim();
+      const label = (await wrapper.locator('.application-label, label, legend').first().innerText().catch(() => '')).trim();
       if (!label) continue;
 
+      // Checkboxes (consent, terms)
+      const checkbox = wrapper.locator('input[type="checkbox"]').first();
+      if (await checkbox.count() > 0 && !(await checkbox.isChecked())) {
+        const isConsent = /consent|agree|acknowledge|privacy|terms/i.test(label) ||
+          await wrapper.locator('[required], [class*="required"]').count() > 0;
+        if (isConsent) {
+          await checkbox.check({ force: true }).catch(() => {});
+        }
+      }
+
+      // Select dropdowns
+      const selectElem = wrapper.locator('select').first();
+      if (await selectElem.count() > 0) {
+        const optionElements = await selectElem.locator('option').all();
+        const optionsText: string[] = [];
+        for (const opt of optionElements) {
+          const t = (await opt.innerText()).trim();
+          if (t && !/select|choose/i.test(t)) {
+            optionsText.push(t);
+          }
+        }
+        if (optionsText.length > 0) {
+          const chosen = await answerCustomQuestion(label, optionsText);
+          await selectElem.selectOption({ label: chosen }).catch(async () => {
+            await selectElem.selectOption({ index: 1 }).catch(() => {});
+          });
+        }
+      }
+
+      // Text inputs
       const input = wrapper.locator('input[type="text"], textarea').first();
       if (await input.count() > 0) {
         const val = await input.inputValue().catch(() => '');
         if (!val) {
           const ans = await answerCustomQuestion(label);
-          await input.fill(ans, { timeout: 5000 }).catch(() => {});
+          if (ans && ans !== 'N/A') {
+            await input.fill(ans, { timeout: 5000 }).catch(() => {});
+          }
         }
       }
     }
