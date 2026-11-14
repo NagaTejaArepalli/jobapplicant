@@ -9,12 +9,15 @@
     "current_location": "Bengaluru, Karnataka, India",
     "preferred_locations": ["Bengaluru", "Bangalore", "Hyderabad", "Pune", "Chennai", "Noida", "Gurugram", "Mumbai", "Remote"],
     "linkedin_url": "https://www.linkedin.com/in/naga-teja-arepalli",
-    "portfolio_url": "https://github.com/naga-teja-arepalli"
+    "portfolio_url": "https://github.com/NagaTejaArepalli"
   },
   "experience_summary": {
     "current_company": "Infor",
     "current_title": "QA Engineer (SDET)",
+    "current_dates": "Aug 2025 – Present",
     "previous_company": "Accenture in India",
+    "previous_title": "Packaged Application Development Analyst / Associate",
+    "previous_dates": "Jun 2023 – Jul 2025",
     "total_years_experience": "3.5",
     "relevant_automation_years": "3.5",
     "education": {
@@ -23,6 +26,43 @@
       "graduation_year": "2023",
       "grade": "First Class with Distinction"
     }
+  },
+  "technical_skills": {
+    "automation_and_architecture": [
+      "Playwright",
+      "Selenium WebDriver",
+      "BDD (Cucumber)",
+      "Thread-Safe Parallel Execution",
+      "Page Object Model (POM)",
+      "TestNG",
+      "Java",
+      "Gherkin",
+      "TypeScript"
+    ],
+    "ai_and_autonomous_testing": [
+      "Devin AI",
+      "KIRO AI",
+      "Model Context Protocol (MCP - Playwright, GitLab, Jira)",
+      "Automated Root-Cause Diagnostics"
+    ],
+    "api_and_integration": [
+      "REST Assured",
+      "Microsoft Graph API",
+      "Web Services/REST APIs",
+      "GraphQL"
+    ],
+    "tools_and_cicd": [
+      "GitLab CI/CD",
+      "GitHub Actions",
+      "Maven",
+      "Git",
+      "Jira"
+    ],
+    "certifications": [
+      "Generative AI Leader Certification",
+      "GitHub Copilot",
+      "Essentials Automation Certification - 2024 Automation Anywhere"
+    ]
   },
   "hr_logistics": {
     "current_ctc_lpa": "14",
@@ -54,5 +94,5 @@
       "8+ years"
     ]
   },
-  "skills_context_for_llm": "QA Engineer (SDET) with strong expertise in Playwright with TypeScript, Java with Selenium, RestAssured API testing, BDD (Cucumber), CI/CD (Jenkins, GitHub Actions, GitLab CI), manual testing, comprehensive test case writing, Jira and Zephyr."
+  "skills_context_for_llm": "Senior QA Automation Engineer & SDET with 3.5+ years of experience specializing in enterprise test framework architecture, thread-safe parallel execution, and cutting-edge autonomous AI testing. Expertise in Playwright, Selenium WebDriver, BDD Cucumber, REST Assured, Microsoft Graph API, GraphQL, Devin AI, Model Context Protocol (MCP), GitLab CI/CD, and Jira. 375+ high-rigor BDD scenarios authored, driving 85%+ coverage across complex enterprise workflows."
 }
