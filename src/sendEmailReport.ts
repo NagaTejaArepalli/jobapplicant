@@ -21,7 +21,7 @@ export async function sendEmailReport() {
     }
   }
 
-  const recipientEmail = process.env.REPORT_EMAIL || profile.personal_info.email || 'nagateja2704@gmail.com';
+  const recipientEmail = process.env.REPORT_EMAIL || profile.personal_info.email || 'naga.teja.are@gmail.com';
   const smtpUser = process.env.SMTP_USER;
   const smtpPass = process.env.SMTP_PASS;
 

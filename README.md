@@ -65,7 +65,7 @@ GitHub Actions provides **2,000 free minutes per month** with no credit card req
    ```
 2. **Add Secrets** in your GitHub repo under **Settings → Secrets and variables → Actions**:
    - `GEMINI_API_KEY`: Your Google AI Studio API key.
-   - `SMTP_USER`: `nagateja2704@gmail.com`
+   - `SMTP_USER`: `naga.teja.are@gmail.com`
    - `SMTP_PASS`: Your 16-character Google App Password.
 3. **Execution**:
    - The workflow automatically runs on a schedule every weekday at **9:00 AM IST** (`30 3 * * 1-5` UTC).

@@ -34,7 +34,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DRY_RUN: ${{ vars.DRY_RUN || 'true' }}
-          REPORT_EMAIL: ${{ vars.REPORT_EMAIL || 'nagateja2704@gmail.com' }}
+          REPORT_EMAIL: ${{ vars.REPORT_EMAIL || 'naga.teja.are@gmail.com' }}
 
       - name: Send Consolidated Email
         run: npx ts-node src/sendEmailReport.ts
@@ -42,7 +42,7 @@ jobs:
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          REPORT_EMAIL: ${{ vars.REPORT_EMAIL || 'nagateja2704@gmail.com' }}
+          REPORT_EMAIL: ${{ vars.REPORT_EMAIL || 'naga.teja.are@gmail.com' }}
 
       - name: Commit Deduplication State
         if: always()
